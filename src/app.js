@@ -1,7 +1,7 @@
-const express = require('express');
+const express = require("express");
 const app = express();
-const mongoose = require('mongoose');
-var products   =require("../models/product.js");
+const mongoose = require("mongoose");
+const Product = require("../models/product.js");
 
 // Import routes
 
@@ -21,18 +21,47 @@ app.use(express.json());
 
 */
 
+// Route to get count of all products
+app.get("/", async function (req, res) {
+  var count = 0;
+  const c = await Product.countDocuments({});
+  count = c;
+  res.send(JSON.stringify(count));
+});
 
-// Complete this Route which will return the count of number of products in the range/
+// Route to get count of products in a category
+app.get("/category", async function (req, res) {
+  const category = req.query.category;
+  const c = await Product.countDocuments({ category: category });
+  var count = 0;
+  count = c;
+  res.send(JSON.stringify(count));
+});
 
-app.get("/",async function(req,res){
+// Route to get count of products in a price range
+app.get("/range", async function (req, res) {
+  const range = req.query.range.split("-").map(Number);
+  let query = { price: { $gte: range[0] } };
+  if (range.length > 1) {
+    query.price.$lte = range[1];
+  }
+  const c = await Product.countDocuments(query);
+  var count = 0;
+  count = c;
+  res.send(JSON.stringify(count));
+});
 
-    var count = 0;
-
-    //Write you code here
-    //update count variable 
-
-    res.send(JSON.stringify(count));
-
+// Route to get count of products in a category and price range
+app.get("/category-range", async function (req, res) {
+  const category = req.query.category;
+  const range = req.query.range.split("-").map(Number);
+  const c = await Product.countDocuments({
+    category: category,
+    price: { $gte: range[0], $lte: range[1] },
+  });
+  var count = 0;
+  count = c;
+  res.send(JSON.stringify(count));
 });
 
 module.exports = app;
